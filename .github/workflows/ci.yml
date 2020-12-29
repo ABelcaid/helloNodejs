@@ -1,0 +1,55 @@
+name:Deploy A Nodejs App To Oracle Cloud 
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+      
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        node-version: [ 14.x]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: npm install and test
+        run: |
+          npm ci
+          npm build
+        env:
+          CI: true
+  
+
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+      - run: echo "hi this is a test job"
+
+    
+  deploy:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: SSH and deploy node app
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            mkdir -p ~/apps/
+            cd ~/apps/
+            git clone "https://github.com/ABelcaid/helloNodejs.git" nodejsApp 2> dev/null || (cd nodejsApp ; git pull)
+            cd nodejsApp && npm install
+            npm run build
+            npm run serve
