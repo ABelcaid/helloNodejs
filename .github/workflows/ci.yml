@@ -47,9 +47,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            mkdir -p ~/apps/
-            cd ~/apps/
-            git clone "https://github.com/ABelcaid/helloNodejs.git" nodejsApp 2> dev/null || (cd nodejsApp ; git pull)
-            cd nodejsApp && npm install
+            cd ~/helloNodejs/
+            git pull origin main
+            npm install
             npm run build
             npm run serve
